@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Chessington.GameEngine.Pieces
 {
@@ -10,7 +9,6 @@ namespace Chessington.GameEngine.Pieces
         private readonly int _modifier = 1;
         private Square _currentLocation;
         private Board _board;
-        private bool _spaceClear = true;
 
         private readonly List<Action> _pipeline;
         public Pawn(Player player)
