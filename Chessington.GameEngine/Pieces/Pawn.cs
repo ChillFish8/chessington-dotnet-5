@@ -33,8 +33,6 @@ namespace Chessington.GameEngine.Pieces
             _board = board;
             _currentLocation = board.FindPiece(this);
             InvokePipeline();
-            
-            
 
             var moves = new List<Square>();
             
