@@ -9,6 +9,8 @@ namespace Chessington.GameEngine.Pieces
         private readonly int _modifier = 1;
         private Square _currentLocation;
         private Board _board;
+        private bool _pieceLeft;
+        private bool _pieceRight;
 
         private readonly List<Action> _pipeline;
         public Pawn(Player player)
@@ -22,6 +24,7 @@ namespace Chessington.GameEngine.Pieces
             _pipeline = new List<Action>
             {
                 CheckMoved,
+                CheckCanCapture,
             };
         }
 
@@ -31,21 +34,28 @@ namespace Chessington.GameEngine.Pieces
             _currentLocation = board.FindPiece(this);
             InvokePipeline();
             
+            
+
+            var moves = new List<Square>();
+            
+            if (_pieceLeft)
+                moves.Add(GetNextSquare(colMod: -1));
+            
+            if (_pieceRight)
+                moves.Add(GetNextSquare(colMod: 1));
+            
             if (!SpaceClear())
             {
-                return new List<Square>();
+                return moves;
             }
             
-            var moves = new List<Square>
-            {
-                GetNextSquare()
-            };
+            moves.Add(GetNextSquare());
 
             if (_hasMoved) return moves;
             
             if (SpaceClear(2))
                 moves.Add(GetNextSquare(2));
-
+            
             return moves;
         }
 
@@ -57,9 +67,9 @@ namespace Chessington.GameEngine.Pieces
             }
         }
 
-        private Square GetNextSquare(int boost = 1)
+        private Square GetNextSquare(int boost = 1, int colMod = 0)
         {
-            return Square.At(_currentLocation.Row + (_modifier * boost), _currentLocation.Col);
+            return Square.At(_currentLocation.Row + (_modifier * boost), _currentLocation.Col + colMod);
         }
 
         private bool SpaceClear(int lookAhead = 1)
@@ -76,6 +86,30 @@ namespace Chessington.GameEngine.Pieces
             } else if (!_hasMoved & Player == Player.Black & _currentLocation.Row != 1)
             {
                 _hasMoved = true;
+            }
+        }
+        
+        private void CheckCanCapture()
+        {
+            var oppositeType = Player == Player.Black ? Player.White : Player.Black;
+            if (_currentLocation.Col > 0)
+            {
+                var maybeCaptureLeft = GetNextSquare(colMod: -1);
+                var piece = _board.GetPiece(maybeCaptureLeft);
+                if (piece is not null & piece?.Player == oppositeType)
+                {
+                    _pieceLeft = true;
+                }
+            } 
+            
+            if (_currentLocation.Col < 8)
+            {
+                var maybeCaptureRight = GetNextSquare(colMod: 1);
+                var piece = _board.GetPiece(maybeCaptureRight);
+                if (piece is not null & piece?.Player == oppositeType)
+                {
+                    _pieceRight = true;
+                }
             }
         }
     }
